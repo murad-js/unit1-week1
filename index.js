@@ -1,15 +1,7 @@
 "use strict";
 
 import fs from "node:fs";
-
-const ColumnWidth = Object.freeze({
-  CITY: 18,
-  POPULATION: 10,
-  AREA: 8,
-  DENSITY: 8,
-  COUNTRY: 18,
-  PERCENTAGE: 6,
-});
+import { Alignment, ColumnConfig } from "./shared.js";
 
 const main = () => {
   const data = loadDataFromFile("data.csv");
@@ -36,7 +28,6 @@ function loadDataFromFile(fileName) {
     return fs.readFileSync(fileName, { encoding: "utf-8" });
   } catch (error) {
     console.error(error);
-    return;
   }
 }
 
@@ -58,41 +49,54 @@ function parseData(data) {
   });
 }
 
-function buildCitiesFromParsedData({ data, maxDensity }) {
-  return data.map((city) => {
-    return {
-      ...city,
-      percentage: ((city.density / maxDensity) * 100).toFixed(2),
-    };
-  });
-}
-
 function getMaxDensity(parsedData) {
   return Math.max(...parsedData.map((city) => city.density));
 }
 
-function truncate(str, maxLength) {
-  if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 3) + "...";
+function buildCitiesFromParsedData({ data, maxDensity }) {
+  return data.map((city) => {
+    return {
+      ...city,
+      percentage: Math.round((city.density * 100) / maxDensity).toString(),
+    };
+  });
 }
 
 function buildTable(cities) {
-  const rows = cities.map((city) =>
-    [
-      truncate(city.city, ColumnWidth.CITY).padEnd(ColumnWidth.CITY),
-      truncate(city.population, ColumnWidth.POPULATION).padStart(
-        ColumnWidth.POPULATION
-      ),
-      truncate(city.area, ColumnWidth.AREA).padStart(ColumnWidth.AREA),
-      truncate(city.density, ColumnWidth.DENSITY).padStart(ColumnWidth.DENSITY),
-      truncate(city.country, ColumnWidth.COUNTRY).padStart(ColumnWidth.COUNTRY),
-      truncate(city.percentage, ColumnWidth.PERCENTAGE).padStart(
-        ColumnWidth.PERCENTAGE
-      ),
-    ].join("")
-  );
+  const rows = cities.map((city) => {
+    const cells = [];
+
+    for (const property in city) {
+      cells.push(
+        buildCell({
+          value: city[property],
+          maxLength: ColumnConfig[property].width,
+          alignment: ColumnConfig[property].align,
+        })
+      );
+    }
+
+    return buildRow(cells);
+  });
 
   return rows.join("\n");
+}
+
+function buildRow(cells) {
+  return cells.join("");
+}
+
+function buildCell({ value, maxLength, alignment }) {
+  const addPads = createPaddingFunction(value, maxLength)[alignment];
+
+  return addPads();
+}
+
+function createPaddingFunction(value, maxLength) {
+  return {
+    [Alignment.START]: () => value.padStart(maxLength),
+    [Alignment.END]: () => value.padEnd(maxLength),
+  };
 }
 
 function showTable(table) {

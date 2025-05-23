@@ -1,159 +1,190 @@
 "use strict";
 
 import fs from "node:fs";
+import { Alignment, ColumnConfig } from "./shared.js";
 
 class City {
-  #percentage = 0;
+  name;
+  #population;
+  #area;
+  #density;
+  #country;
+  #percentage;
 
-  constructor(city, population, area, density, country) {
-    this.city = city;
-    this.population = population;
-    this.area = area;
-    this.density = density;
-    this.country = country;
+  constructor(cityData) {
+    this.name = cityData.city;
+    this.#population = cityData.population;
+    this.#area = cityData.area;
+    this.#density = Number(cityData.density);
+    this.#country = cityData.country;
+  }
+
+  calculatePercentage(maxDensity) {
+    this.#percentage = Math.round((this.#density * 100) / maxDensity);
+  }
+
+  get density() {
+    return this.#density;
   }
 
   get percentage() {
     return this.#percentage;
   }
 
-  calculatePercentage(maxDensity) {
-    this.#percentage = ((this.density / maxDensity) * 100).toFixed(2);
-  }
-}
-
-class DataSource {
-  static load(fileName) {
-    try {
-      const data = fs.readFileSync(fileName, { encoding: "utf-8" });
-      return new DataParser(data);
-    } catch (error) {
-      console.error("Error loading data:", error);
-      return null;
-    }
-  }
-}
-
-class DataParser {
-  #rawData;
-  #parsedData;
-
-  constructor(rawData) {
-    this.#rawData = rawData;
-    this.#parsedData = this.#parse();
-  }
-
-  #parse() {
-    const lines = this.#rawData.split("\n");
-    const properties = lines.shift().split(",");
-
-    return lines.map((line) => {
-      const values = line.split(",");
-      if (values.length !== properties.length) {
-        throw new Error("Invalid data format");
-      }
-
-      return properties.reduce((acc, property, index) => {
-        acc[property] = values[index];
-        return acc;
-      }, {});
-    });
-  }
-
-  get data() {
-    return this.#parsedData;
+  toObject() {
+    return {
+      city: this.name,
+      population: this.#population,
+      area: this.#area,
+      density: String(this.#density),
+      country: this.#country,
+      percentage: String(this.#percentage),
+    };
   }
 }
 
 class CityCollection {
   #cities = [];
-  #maxDensity = 0;
 
-  constructor(parsedData) {
-    this.#buildCities(parsedData);
+  add(cityData) {
+    const city = new City(cityData);
+    this.#cities.push(city);
   }
 
-  #buildCities(parsedData) {
-    this.#maxDensity = Math.max(...parsedData.map((city) => city.density));
-
-    this.#cities = parsedData.map((cityData) => {
-      const city = new City(
-        cityData.city,
-        cityData.population,
-        cityData.area,
-        cityData.density,
-        cityData.country
-      );
-      city.calculatePercentage(this.#maxDensity);
-      return city;
-    });
-  }
-
-  sortCities() {
-    this.#cities.sort((a, b) => b.percentage - a.percentage);
-
+  processDensityPercentages() {
+    const maxDensity = Math.max(...this.#cities.map((city) => city.density));
+    this.#cities.forEach((city) => city.calculatePercentage(maxDensity));
     return this;
   }
 
-  get cities() {
-    return this.#cities;
+  sortByPercentage() {
+    this.#cities.sort((a, b) => b.percentage - a.percentage);
+    return this;
+  }
+
+  [Symbol.iterator]() {
+    return this.#cities.map((city) => city.toObject())[Symbol.iterator]();
   }
 }
 
-class TableFormatter {
-  static #COLUMN_WIDTH = Object.freeze({
-    CITY: 18,
-    POPULATION: 10,
-    AREA: 8,
-    DENSITY: 8,
-    COUNTRY: 18,
-    PERCENTAGE: 6,
-  });
+class FileReader {
+  #fileName;
+  #encoding;
 
-  static #truncate(str, maxLength) {
-    return str.length <= maxLength ? str : str.slice(0, maxLength - 3) + "...";
+  constructor(fileName, encoding = "utf-8") {
+    this.#fileName = fileName;
+    this.#encoding = encoding;
   }
 
-  static format(cities) {
-    return cities.map((city) => this.#formatRow(city)).join("\n");
+  read() {
+    try {
+      return fs.readFileSync(this.#fileName, { encoding: this.#encoding });
+    } catch (error) {
+      throw new Error(
+        `Failed to read file ${this.#fileName}: ${error.message}`
+      );
+    }
+  }
+}
+
+class CsvParser {
+  #headers;
+  #body;
+  #originalData;
+
+  constructor(data) {
+    this.#originalData = data;
+    this.#headers = this.#defineHeaders();
+    this.#body = this.#defineBody();
   }
 
-  static #formatRow(city) {
-    return [
-      this.#truncate(city.city, this.#COLUMN_WIDTH.CITY).padEnd(
-        this.#COLUMN_WIDTH.CITY
-      ),
-      this.#truncate(city.population, this.#COLUMN_WIDTH.POPULATION).padStart(
-        this.#COLUMN_WIDTH.POPULATION
-      ),
-      this.#truncate(city.area, this.#COLUMN_WIDTH.AREA).padStart(
-        this.#COLUMN_WIDTH.AREA
-      ),
-      this.#truncate(city.density, this.#COLUMN_WIDTH.DENSITY).padStart(
-        this.#COLUMN_WIDTH.DENSITY
-      ),
-      this.#truncate(city.country, this.#COLUMN_WIDTH.COUNTRY).padStart(
-        this.#COLUMN_WIDTH.COUNTRY
-      ),
-      this.#truncate(city.percentage, this.#COLUMN_WIDTH.PERCENTAGE).padStart(
-        this.#COLUMN_WIDTH.PERCENTAGE
-      ),
-    ].join("");
+  #defineHeaders() {
+    return this.#originalData.split("\n")[0].split(",");
+  }
+
+  #defineBody() {
+    return this.#originalData.split("\n").slice(1);
+  }
+
+  parse() {
+    return this.#body.map((line) => {
+      const values = line.split(",");
+
+      if (values.length !== this.#headers.length) {
+        throw new Error("Invalid CSV format: inconsistent column count");
+      }
+
+      return this.#headers.reduce((obj, header, index) => {
+        obj[header.trim()] = values[index].trim();
+        return obj;
+      }, {});
+    });
+  }
+}
+
+class CityTable {
+  #cityCollection;
+  #rows = [];
+
+  constructor(cityCollection) {
+    this.#cityCollection = cityCollection;
+  }
+
+  build() {
+    this.#rows = [];
+
+    for (const cityData of this.#cityCollection) {
+      const row = this.#buildRow(cityData);
+      this.#rows.push(row);
+    }
+    return this;
+  }
+
+  #buildRow(cityData) {
+    const cells = [];
+    for (const [property, value] of Object.entries(cityData)) {
+      const config = ColumnConfig[property];
+      const cell = this.#buildCell(value, config);
+      cells.push(cell);
+    }
+    return cells.join("");
+  }
+
+  #buildCell(value, config) {
+    return config.align === Alignment.START
+      ? value.padStart(config.width)
+      : value.padEnd(config.width);
+  }
+
+  get rows() {
+    return this.#rows;
+  }
+}
+
+class TableDisplay {
+  #table;
+
+  constructor(table) {
+    this.#table = table;
+  }
+
+  toConsole() {
+    this.#table.rows.forEach((row) => console.log(row));
   }
 }
 
 function main() {
-  const parser = DataSource.load("data.csv");
+  const fileData = new FileReader("data.csv").read();
+  const parsedData = new CsvParser(fileData).parse();
+  const cityCollection = new CityCollection();
 
-  if (!parser) {
-    return;
-  }
+  parsedData.forEach((cityData) => cityCollection.add(cityData));
+  cityCollection.processDensityPercentages().sortByPercentage();
 
-  const cityCollection = new CityCollection(parser.data);
-  const formattedTable = TableFormatter.format(
-    cityCollection.sortCities().cities
-  );
-  console.log(formattedTable);
+  const table = new CityTable(cityCollection).build();
+  const display = new TableDisplay(table);
+
+  display.toConsole();
 }
 
 main();
