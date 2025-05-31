@@ -3,9 +3,17 @@ export class Basket {
   #currentPrice = 0;
   #errors = [];
   #items = [];
+  #resolve = null;
+  #reject = null;
+  #promise = null;
 
   constructor({ limit = 0 }) {
     this.#priceLimit = limit;
+
+    this.#promise = new Promise((resolve, reject) => {
+      this.#resolve = resolve;
+      this.#reject = reject;
+    });
   }
 
   add(item) {
@@ -21,13 +29,21 @@ export class Basket {
     return { availableFunds: this.#priceLimit - this.#currentPrice };
   }
 
-  toPromise() {
-    return new Promise((resolve) => {
-      resolve({
-        items: this.#items,
-        total: this.#currentPrice,
-        errors: this.#errors,
-      });
-    });
+  done() {
+    this.#resolve(this.toObject());
+  }
+
+  then(onFulfilled, onRejected) {
+    return this.#promise.then(onFulfilled, onRejected);
+  }
+
+  toObject() {
+    if (this.sss) this.#reject(new Error("Basket is not done"));
+
+    return {
+      items: this.#items,
+      total: this.#currentPrice,
+      errors: this.#errors,
+    };
   }
 }
