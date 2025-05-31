@@ -123,11 +123,13 @@ class CsvParser {
 }
 
 class CityTable {
-  #cityCollection;
+  #cityCollection = null;
   #rows = [];
+  #formatConfig = null
 
-  constructor(cityCollection) {
+  constructor(cityCollection, formatConfig) {
     this.#cityCollection = cityCollection;
+    this.#formatConfig = formatConfig;
   }
 
   build() {
@@ -143,7 +145,7 @@ class CityTable {
   #buildRow(cityData) {
     const cells = [];
     for (const [property, value] of Object.entries(cityData)) {
-      const config = ColumnConfig[property];
+      const config = this.#formatConfig[property];
       const cell = this.#buildCell(value, config);
       cells.push(cell);
     }
@@ -181,7 +183,7 @@ function main() {
   parsedData.forEach((cityData) => cityCollection.add(cityData));
   cityCollection.processDensityPercentages().sortByPercentage();
 
-  const table = new CityTable(cityCollection).build();
+  const table = new CityTable(cityCollection, ColumnConfig).build();
   const display = new TableDisplay(table);
 
   display.toConsole();

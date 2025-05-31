@@ -62,7 +62,7 @@ function buildCitiesFromParsedData({ data, maxDensity }) {
   });
 }
 
-function buildTable(cities) {
+function buildTable(cities, config = ColumnConfig) {
   const rows = cities.map((city) => {
     const cells = [];
 
@@ -70,8 +70,8 @@ function buildTable(cities) {
       cells.push(
         buildCell({
           value: city[property],
-          maxLength: ColumnConfig[property].width,
-          alignment: ColumnConfig[property].align,
+          maxLength: config[property].width,
+          alignment: config[property].align,
         })
       );
     }
@@ -87,16 +87,9 @@ function buildRow(cells) {
 }
 
 function buildCell({ value, maxLength, alignment }) {
-  const addPads = createPaddingFunction(value, maxLength)[alignment];
-
-  return addPads();
-}
-
-function createPaddingFunction(value, maxLength) {
-  return {
-    [Alignment.START]: () => value.padStart(maxLength),
-    [Alignment.END]: () => value.padEnd(maxLength),
-  };
+  return alignment === Alignment.START
+    ? value.padStart(maxLength)
+    : value.padEnd(maxLength);
 }
 
 function showTable(table) {
