@@ -38,8 +38,6 @@ export class Basket {
   }
 
   toObject() {
-    if (this.sss) this.#reject(new Error("Basket is not done"));
-
     return {
       items: this.#items,
       total: this.#currentPrice,
