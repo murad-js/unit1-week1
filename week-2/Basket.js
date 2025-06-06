@@ -1,18 +1,18 @@
+import { Thenable } from "./Thenable.js";
+
 export class Basket {
   #priceLimit = 0;
   #currentPrice = 0;
   #errors = [];
   #items = [];
-  #resolve = null;
-  #reject = null;
   #promise = null;
+  #resolve = null;
 
   constructor({ limit = 0 }) {
     this.#priceLimit = limit;
 
-    this.#promise = new Promise((resolve, reject) => {
+    this.#promise = new Thenable((resolve) => {
       this.#resolve = resolve;
-      this.#reject = reject;
     });
   }
 
@@ -33,8 +33,8 @@ export class Basket {
     this.#resolve(this.toObject());
   }
 
-  then(onFulfilled, onRejected) {
-    return this.#promise.then(onFulfilled, onRejected);
+  toPromise() {
+    return this.#promise;
   }
 
   toObject() {

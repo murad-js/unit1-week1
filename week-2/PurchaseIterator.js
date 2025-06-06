@@ -1,3 +1,5 @@
+import { Thenable } from "./Thenable.js";
+
 export class PurchaseIterator {
   #goods;
 
@@ -14,8 +16,8 @@ export class PurchaseIterator {
     let i = 0;
 
     return {
-      next: async () => {
-        return new Promise((resolve) => {
+      next: () => {
+        return new Thenable((resolve) => {
           resolve({ value: goods[i++], done: i > goods.length });
         });
       },

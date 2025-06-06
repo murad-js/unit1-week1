@@ -16,7 +16,10 @@ const main = async () => {
   const goods = PurchaseIterator.create(purchase);
   const basket = new Basket({ limit: 1050 });
 
-  displayBasket(basket);
+  void (async () => {
+    await basket.toPromise().then(console.log);
+    console.log("Basket 🔝");
+  })();
 
   for await (const item of goods) {
     const { availableFunds } = basket.add(item);
@@ -27,7 +30,3 @@ const main = async () => {
 };
 
 void main();
-
-async function displayBasket(basket) {
-  await basket.then(console.log, console.error);
-}
