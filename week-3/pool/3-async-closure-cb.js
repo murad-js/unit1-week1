@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const poolify = (factory, { size, max }) => {
   const instances = new Array(size).fill(null).map(factory);

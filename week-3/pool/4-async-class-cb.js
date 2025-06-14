@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 class Pool {
   #factory = null;
@@ -15,21 +15,19 @@ class Pool {
     this.#totalInstancesCount = size;
   }
 
-  acquire() {
-    return new Promise((resolve) => {
-      if (this.#instances.length > 0) {
-        resolve(this.#instances.pop());
-        return;
-      }
+  acquire(cb) {
+    if (this.#instances.length > 0) {
+      cb(this.#instances.pop());
+      return;
+    }
 
-      if (this.#totalInstancesCount < this.#max) {
-        this.#totalInstancesCount++;
-        resolve(this.#factory());
-        return;
-      }
+    if (this.#totalInstancesCount < this.#max) {
+      cb(this.#factory());
+      this.#totalInstancesCount++;
+      return;
+    }
 
-      this.#queue.push(resolve);
-    });
+    this.#queue.push(cb);
   }
 
   release(instance) {
@@ -51,14 +49,12 @@ const createFileBuffer = () => createBuffer(FILE_BUFFER_SIZE);
 const pool = new Pool(createFileBuffer, { size: 5, max: 7 });
 
 for (let i = 0; i < 12; i++) {
-  pool.acquire().then((instance) => {
+  pool.acquire((instance) => {
     setTimeout(() => {
       // Do something.
       console.log(i, instance.constructor.name);
 
       if (i < 2) pool.release(instance);
     }, 1000);
-
-    return instance;
   });
 }
