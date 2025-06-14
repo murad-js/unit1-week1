@@ -4,22 +4,30 @@ class Pool {
   #factory = null;
   #instances = [];
   #max = 0;
+  #totalInstancesCount = 0;
 
   constructor(factory, { size, max }) {
     this.#max = max;
     this.#factory = factory;
 
     this.#instances = new Array(size).fill(null).map(factory);
+    this.#totalInstancesCount = size;
   }
 
   acquire() {
-    return this.#instances.pop() || this.#factory();
+    if (this.#instances.length > 0) {
+      return this.#instances.pop();
+    }
+
+    if (this.#totalInstancesCount < max) {
+      const instance = this.#factory();
+      this.#totalInstancesCount++;
+      return instance;
+    }
   }
 
   release(instance) {
-    if (this.#instances.length < this.#max) {
-      this.#instances.push(instance);
-    }
+    this.#instances.push(instance);
   }
 }
 

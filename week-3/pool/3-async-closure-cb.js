@@ -7,13 +7,17 @@ const poolify = (factory, { size, max }) => {
 
   const acquire = (cb) => {
     if (instances.length > 0) {
-      cb(instances.pop());
+      const instance = instances.pop();
+      process.nextTick(() => cb(instance));
+
       return;
     }
 
     if (totalInstancesCount < max) {
-      cb(factory());
+      const instance = factory();
       totalInstancesCount++;
+      process.nextTick(() => cb(instance));
+
       return;
     }
 
@@ -22,7 +26,8 @@ const poolify = (factory, { size, max }) => {
 
   const release = (instance) => {
     if (queue.length > 0) {
-      queue.shift()(instance);
+      const cb = queue.shift();
+      process.nextTick(() => cb(instance));
       return;
     }
 

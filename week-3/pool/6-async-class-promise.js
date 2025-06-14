@@ -18,13 +18,17 @@ class Pool {
   acquire() {
     return new Promise((resolve) => {
       if (this.#instances.length > 0) {
-        resolve(this.#instances.pop());
+        const instance = this.#instances.pop();
+        resolve(instance);
+
         return;
       }
 
       if (this.#totalInstancesCount < this.#max) {
+        const instance = this.#factory();
         this.#totalInstancesCount++;
-        resolve(this.#factory());
+        resolve(instance);
+
         return;
       }
 
@@ -34,7 +38,9 @@ class Pool {
 
   release(instance) {
     if (this.#queue.length > 0) {
-      this.#queue.shift()(instance);
+      const resolve = this.#queue.shift();
+      resolve(instance);
+
       return;
     }
 

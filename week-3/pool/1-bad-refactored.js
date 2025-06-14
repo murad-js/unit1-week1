@@ -4,12 +4,21 @@ const poolify = (factory, options, size, max) => {
   const instances = Array(size)
     .fill(null)
     .map(() => factory(options));
+  let totalInstancesCount = instances.length;
 
-  const getInstance = () => instances.pop() || factory(options);
-  const returnInstance = (instance) => {
-    if (instances.length < max) {
-      instances.push(instance);
+  const getInstance = () => {
+    if (instances.length > 0) {
+      return instances.pop();
     }
+
+    if (totalInstancesCount < max) {
+      const instance = factory(options);
+      totalInstancesCount++;
+      return instance;
+    }
+  };
+  const returnInstance = (instance) => {
+    instances.push(instance);
   };
 
   return { getInstance, returnInstance };

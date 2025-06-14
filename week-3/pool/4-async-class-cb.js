@@ -17,13 +17,17 @@ class Pool {
 
   acquire(cb) {
     if (this.#instances.length > 0) {
-      cb(this.#instances.pop());
+      const instance = this.#instances.pop();
+      process.nextTick(() => cb(instance));
+
       return;
     }
 
     if (this.#totalInstancesCount < this.#max) {
-      cb(this.#factory());
+      const instance = this.#factory();
       this.#totalInstancesCount++;
+      process.nextTick(() => cb(instance));
+
       return;
     }
 
@@ -32,7 +36,9 @@ class Pool {
 
   release(instance) {
     if (this.#queue.length > 0) {
-      this.#queue.shift()(instance);
+      const cb = this.#queue.shift();
+      process.nextTick(() => cb(instance));
+
       return;
     }
 
