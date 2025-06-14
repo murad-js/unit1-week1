@@ -5,6 +5,7 @@
 The task involves rewriting and optimizing the following code while applying various software engineering principles and best practices.
 
 ### Learning Objectives
+
 - Watch week 1 lectures about:
   - Separation of Concerns (SoC)
   - Single Responsibility Principle (SRP)
@@ -12,6 +13,7 @@ The task involves rewriting and optimizing the following code while applying var
   - V8 engine
 
 ### Optimization Goals
+
 - Apply optimizations of computing resources:
   - Processor optimization
   - Memory optimization
@@ -27,6 +29,7 @@ The task involves rewriting and optimizing the following code while applying var
 - Implement simple unit tests without frameworks
 
 ### Additional Tasks
+
 - Implement in multiple paradigms:
   - Object-Oriented Programming (OOP)
   - Functional Programming (FP)
@@ -87,11 +90,13 @@ if (data) {
 ## Implementation Notes
 
 The code processes city data to:
+
 1. Calculate population density percentages
 2. Sort cities by density percentage
 3. Format and display the data in a table
 
 The refactoring should focus on:
+
 - Breaking down the monolithic code into smaller, focused components
 - Improving error handling and data validation
 - Making the code more maintainable and testable

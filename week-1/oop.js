@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-import fs from "node:fs";
-import { Alignment, ColumnConfig } from "./shared.js";
+import fs from 'node:fs';
+import { Alignment, ColumnConfig } from './shared.js';
 
 class City {
   name;
@@ -71,7 +71,7 @@ class FileReader {
   #fileName;
   #encoding;
 
-  constructor(fileName, encoding = "utf-8") {
+  constructor(fileName, encoding = 'utf-8') {
     this.#fileName = fileName;
     this.#encoding = encoding;
   }
@@ -81,7 +81,7 @@ class FileReader {
       return fs.readFileSync(this.#fileName, { encoding: this.#encoding });
     } catch (error) {
       throw new Error(
-        `Failed to read file ${this.#fileName}: ${error.message}`
+        `Failed to read file ${this.#fileName}: ${error.message}`,
       );
     }
   }
@@ -99,19 +99,19 @@ class CsvParser {
   }
 
   #defineHeaders() {
-    return this.#originalData.split("\n")[0].split(",");
+    return this.#originalData.split('\n')[0].split(',');
   }
 
   #defineBody() {
-    return this.#originalData.split("\n").slice(1);
+    return this.#originalData.split('\n').slice(1);
   }
 
   parse() {
     return this.#body.map((line) => {
-      const values = line.split(",");
+      const values = line.split(',');
 
       if (values.length !== this.#headers.length) {
-        throw new Error("Invalid CSV format: inconsistent column count");
+        throw new Error('Invalid CSV format: inconsistent column count');
       }
 
       return this.#headers.reduce((obj, header, index) => {
@@ -125,7 +125,7 @@ class CsvParser {
 class CityTable {
   #cityCollection = null;
   #rows = [];
-  #formatConfig = null
+  #formatConfig = null;
 
   constructor(cityCollection, formatConfig) {
     this.#cityCollection = cityCollection;
@@ -149,7 +149,7 @@ class CityTable {
       const cell = this.#buildCell(value, config);
       cells.push(cell);
     }
-    return cells.join("");
+    return cells.join('');
   }
 
   #buildCell(value, config) {
@@ -176,7 +176,7 @@ class TableDisplay {
 }
 
 function main() {
-  const fileData = new FileReader("data.csv").read();
+  const fileData = new FileReader('data.csv').read();
   const parsedData = new CsvParser(fileData).parse();
   const cityCollection = new CityCollection();
 

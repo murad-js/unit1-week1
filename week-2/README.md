@@ -23,6 +23,7 @@ const goods = PurchaseIterator.create(purchase);
 ### Basket
 
 The `Basket` class manages a shopping cart with the following features:
+
 - Price limit enforcement
 - Item tracking
 - Error handling for items that exceed the budget
@@ -69,10 +70,11 @@ const main = async () => {
 ## Example Output
 
 The basket will return an object with the following structure:
+
 ```javascript
 {
   items: [...], // Successfully added items
   total: number, // Total price of added items
   errors: [...] // Items that couldn't be added due to budget constraints
 }
-``` 
+```

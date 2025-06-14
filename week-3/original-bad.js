@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 // TODO: Refactor to respect SoC principle and
 // optimize JavaScript for V8
