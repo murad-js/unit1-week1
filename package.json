@@ -1,0 +1,12 @@
+{
+  "name": "tasks",
+  "version": "1.0.0",
+  "description": "Tasks solutions",
+  "author": "Murad Imanov",
+  "scripts": {
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "3.5.3"
+  }
+}

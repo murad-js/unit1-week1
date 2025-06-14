@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-import fs from "node:fs";
-import { Alignment, ColumnConfig } from "./shared.js";
+import fs from 'node:fs';
+import { Alignment, ColumnConfig } from './shared.js';
 
 const main = () => {
-  const data = loadDataFromFile("data.csv");
+  const data = loadDataFromFile('data.csv');
 
   if (!data) {
     return;
@@ -25,21 +25,21 @@ main();
 
 function loadDataFromFile(fileName) {
   try {
-    return fs.readFileSync(fileName, { encoding: "utf-8" });
+    return fs.readFileSync(fileName, { encoding: 'utf-8' });
   } catch (error) {
     console.error(error);
   }
 }
 
 function parseData(data) {
-  const lines = data.split("\n");
-  const properties = lines.shift().split(",");
+  const lines = data.split('\n');
+  const properties = lines.shift().split(',');
 
   return lines.map((line) => {
-    const values = line.split(",");
+    const values = line.split(',');
 
     if (values.length !== properties.length) {
-      throw new Error("Invalid data");
+      throw new Error('Invalid data');
     }
 
     return properties.reduce((acc, property, index) => {
@@ -72,18 +72,18 @@ function buildTable(cities, config = ColumnConfig) {
           value: city[property],
           maxLength: config[property].width,
           alignment: config[property].align,
-        })
+        }),
       );
     }
 
     return buildRow(cells);
   });
 
-  return rows.join("\n");
+  return rows.join('\n');
 }
 
 function buildRow(cells) {
-  return cells.join("");
+  return cells.join('');
 }
 
 function buildCell({ value, maxLength, alignment }) {

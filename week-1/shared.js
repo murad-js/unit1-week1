@@ -1,6 +1,6 @@
 export const Alignment = Object.freeze({
-  START: "start",
-  END: "end",
+  START: 'start',
+  END: 'end',
 });
 
 export const ColumnConfig = {
