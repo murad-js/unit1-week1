@@ -4,9 +4,13 @@
   "description": "Tasks solutions",
   "author": "Murad Imanov",
   "scripts": {
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "ts-node": "ts-node $npm_filename"
   },
   "devDependencies": {
-    "prettier": "3.5.3"
+    "@types/node": "24.0.1",
+    "prettier": "3.5.3",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
   }
 }

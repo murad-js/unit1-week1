@@ -1,10 +1,12 @@
 'use strict';
 
 import fs from 'node:fs';
+import path from 'node:path';
 import { Alignment, ColumnConfig } from './shared.js';
 
 const main = () => {
-  const data = loadDataFromFile('data.csv');
+  const filePath = path.join(__dirname, 'data.csv');
+  const data = loadDataFromFile(filePath);
 
   if (!data) {
     return;
@@ -23,9 +25,9 @@ const main = () => {
 
 main();
 
-function loadDataFromFile(fileName) {
+function loadDataFromFile(filePath) {
   try {
-    return fs.readFileSync(fileName, { encoding: 'utf-8' });
+    return fs.readFileSync(filePath, { encoding: 'utf-8' });
   } catch (error) {
     console.error(error);
   }

@@ -1,6 +1,7 @@
 'use strict';
 
 import fs from 'node:fs';
+import path from 'node:path';
 import { Alignment, ColumnConfig } from './shared.js';
 
 class City {
@@ -68,20 +69,20 @@ class CityCollection {
 }
 
 class FileReader {
-  #fileName;
+  #filePath;
   #encoding;
 
-  constructor(fileName, encoding = 'utf-8') {
-    this.#fileName = fileName;
+  constructor(filePath, encoding = 'utf-8') {
+    this.#filePath = filePath;
     this.#encoding = encoding;
   }
 
   read() {
     try {
-      return fs.readFileSync(this.#fileName, { encoding: this.#encoding });
+      return fs.readFileSync(this.#filePath, { encoding: this.#encoding });
     } catch (error) {
       throw new Error(
-        `Failed to read file ${this.#fileName}: ${error.message}`,
+        `Failed to read file ${this.#filePath}: ${error.message}`,
       );
     }
   }
@@ -176,7 +177,8 @@ class TableDisplay {
 }
 
 function main() {
-  const fileData = new FileReader('data.csv').read();
+  const filePath = path.join(__dirname, 'data.csv');
+  const fileData = new FileReader(filePath).read();
   const parsedData = new CsvParser(fileData).parse();
   const cityCollection = new CityCollection();
 
