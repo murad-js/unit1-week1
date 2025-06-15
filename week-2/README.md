@@ -1,80 +1,117 @@
-# Shopping Basket Implementation
+# Async Iterator and Thenable Task
 
-This project implements a shopping basket system with an asynchronous iterator pattern and price limit functionality.
+## Task Description
 
-## Overview
+The task involves implementing a shopping basket system with async iteration and Promise-like behavior.
 
-The solution consists of three main components:
+### Learning Objectives
 
-1. `PurchaseIterator` - An async iterator for processing shopping items
-2. `Basket` - A price-limited shopping basket implementation
-3. Main application logic that ties everything together
+- Watch week 2 lectures about:
+  - Async Iterators
+  - Symbol.asyncIterator
+  - Thenable objects
+  - Promise-like behavior
 
-## Components
+### Implementation Goals
 
-### PurchaseIterator
+- Create an async iterator for a dataset
+- Implement a Basket class with spending limit
+- Use async iteration to process items
+- Make the Basket "thenable"
+- Track items, total cost, and errors
 
-The `PurchaseIterator` class implements the async iterator pattern using `Symbol.asyncIterator`. It allows for asynchronous iteration over a collection of goods.
-
-```javascript
-const goods = PurchaseIterator.create(purchase);
-```
-
-### Basket
-
-The `Basket` class manages a shopping cart with the following features:
-
-- Price limit enforcement
-- Item tracking
-- Error handling for items that exceed the budget
-- Promise-based result reporting
+## Initial Code
 
 ```javascript
-const basket = new Basket({ limit: 1050 });
+"use strict";
+
+// Create Iterator for given dataset with Symbol.asyncIterator
+// Use for..of to iterate it and pass data to Basket
+// Basket is limited to certain amount
+// After iteration ended Basket should return Thenable
+// to notify us with final list of items, total and
+// escalated errors
+
+const purchase = [
+  { name: "Laptop", price: 1500 },
+  { name: "Mouse", price: 25 },
+  { name: "Keyboard", price: 100 },
+  { name: "HDMI cable", price: 10 },
+  { name: "Bag", price: 50 },
+  { name: "Mouse pad", price: 5 },
+];
+
+const main = async () => {
+  const goods = PurchaseIterator.create(purchase);
+  const basket = new Basket({ limit: 1050 }, (items, total) => {
+    console.log(total);
+  });
+  // Hint: call async function without await
+  for await (const item of goods) {
+    basket.add(item);
+  }
+  // Hint: Add backet.end();
+};
+
+main();
 ```
 
-## Usage
+## Implementation Notes
+
+The code implements a shopping basket system that:
+
+1. Uses `Symbol.asyncIterator` to create an async iterator
+2. Processes items asynchronously with `for await...of`
+3. Enforces a spending limit on the basket
+4. Makes the basket "thenable" for final results
+5. Tracks items, total cost, and errors
+
+The implementation focuses on:
+
+- Proper async iteration
+- Promise-like behavior
+- State management
+- Error handling
+- Clean separation of concerns
+
+## Solution Components
+
+1. **PurchaseIterator**
+
+   - Implements `Symbol.asyncIterator`
+   - Provides async iteration over purchase items
+   - Handles data encapsulation
+
+2. **Basket**
+
+   - Enforces spending limit
+   - Tracks items and total cost
+   - Implements Promise-like behavior
+   - Records errors for exceeded limits
+
+3. **Main Application Flow**
+   - Creates iterator and basket
+   - Processes items asynchronously
+   - Handles final results through Promise-like interface
+
+## Usage Example
 
 ```javascript
 const main = async () => {
   const goods = PurchaseIterator.create(purchase);
   const basket = new Basket({ limit: 1050 });
 
-  setImmediate(() => {
-    basket.toPromise().then(console.log);
-  });
+  displayBasket(basket);
 
   for await (const item of goods) {
     const { availableFunds } = basket.add(item);
     if (availableFunds === 0) break;
   }
+
+  basket.done();
 };
-```
 
-## Features
-
-- **Async Iteration**: Uses `for await...of` to process items asynchronously
-- **Price Limit**: Enforces a maximum spending limit
-- **Error Tracking**: Records items that couldn't be added due to budget constraints
-- **Promise-based Results**: Returns a promise with the final basket state
-
-## Implementation Details
-
-- The `PurchaseIterator` uses `Symbol.asyncIterator` to create an async iterator
-- The `Basket` class maintains private state using private class fields (#)
-- Results are returned as a promise containing:
-  - List of successfully added items
-  - Total price
-  - Any errors encountered during the process
-
-## Example Output
-
-The basket will return an object with the following structure:
-
-```javascript
-{
-  items: [...], // Successfully added items
-  total: number, // Total price of added items
-  errors: [...] // Items that couldn't be added due to budget constraints
+async function displayBasket(basket) {
+  await basket.then(console.log, console.error);
 }
 ```
